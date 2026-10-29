@@ -1,0 +1,96 @@
+@let t = i18n.t().contact;
+<section id="contact" class="section">
+  <div class="mx-auto grid max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-5">
+    <div class="lg:col-span-2" appReveal>
+      <h2 class="section-title">{{ t.title }}</h2>
+      <p class="mt-4 text-slate-600 dark:text-slate-300">{{ t.subtitle }}</p>
+
+      <ul class="mt-8 space-y-3 text-sm font-medium">
+        <li>
+          <a [href]="'mailto:' + site.email" class="link">✉️ {{ site.email }}</a>
+        </li>
+        <li><a [href]="site.github" target="_blank" rel="noopener" class="link">🐙 GitHub</a></li>
+        @if (site.linkedin) {
+          <li><a [href]="site.linkedin" target="_blank" rel="noopener" class="link">💼 LinkedIn</a></li>
+        }
+        @if (site.upwork) {
+          <li><a [href]="site.upwork" target="_blank" rel="noopener" class="link">🟢 Upwork</a></li>
+        }
+        @if (site.cvUrl) {
+          <li><a [href]="site.cvUrl" target="_blank" rel="noopener" class="link">📄 CV (PDF)</a></li>
+        }
+      </ul>
+    </div>
+
+    <div class="card lg:col-span-3" appReveal>
+      @switch (status()) {
+        @case ('sent') {
+          <div class="py-10 text-center" role="status">
+            <p class="text-4xl">🎉</p>
+            <h3 class="mt-3 text-xl font-semibold">{{ t.successTitle }}</h3>
+            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ t.successText }}</p>
+            <button type="button" class="btn-secondary mt-6" (click)="reset()">{{ t.sendAnother }}</button>
+          </div>
+        }
+        @case ('mailto') {
+          <div class="py-10 text-center" role="status">
+            <p class="text-4xl">✉️</p>
+            <p class="mt-3 text-slate-600 dark:text-slate-300">{{ t.mailtoNote }}</p>
+            <button type="button" class="btn-secondary mt-6" (click)="reset()">{{ t.sendAnother }}</button>
+          </div>
+        }
+        @default {
+          <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="space-y-5">
+            <div class="grid gap-5 sm:grid-cols-2">
+              <label class="block">
+                <span class="field-label">{{ t.name }}</span>
+                <input formControlName="name" autocomplete="name" class="field" />
+                @if (errorFor(form.controls.name); as err) {
+                  <span class="field-error">{{ err }}</span>
+                }
+              </label>
+              <label class="block">
+                <span class="field-label">{{ t.email }}</span>
+                <input formControlName="email" type="email" autocomplete="email" class="field" />
+                @if (errorFor(form.controls.email); as err) {
+                  <span class="field-error">{{ err }}</span>
+                }
+              </label>
+            </div>
+
+            <label class="block">
+              <span class="field-label">{{ t.budget }}</span>
+              <select formControlName="type" class="field">
+                <option value="">—</option>
+                @for (option of t.budgetOptions; track option) {
+                  <option [value]="option">{{ option }}</option>
+                }
+              </select>
+            </label>
+
+            <label class="block">
+              <span class="field-label">{{ t.message }}</span>
+              <textarea formControlName="message" rows="5" class="field resize-y" [placeholder]="t.messagePlaceholder"></textarea>
+              @if (errorFor(form.controls.message); as err) {
+                <span class="field-error">{{ err }}</span>
+              }
+            </label>
+
+            <!-- Honeypot field, invisible to people and screen readers -->
+            <input formControlName="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" class="absolute -left-[9999px] h-0 w-0 opacity-0" />
+
+            @if (status() === 'error') {
+              <p class="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:bg-rose-950 dark:text-rose-300" role="alert">
+                {{ t.errorText }} <a [href]="'mailto:' + site.email" class="underline">{{ site.email }}</a>
+              </p>
+            }
+
+            <button type="submit" class="btn-primary w-full sm:w-auto" [disabled]="status() === 'sending'">
+              {{ status() === 'sending' ? t.sending : t.send }}
+            </button>
+          </form>
+        }
+      }
+    </div>
+  </div>
+</section>
